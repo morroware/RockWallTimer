@@ -4,6 +4,8 @@ import pygame, sys
 import time
 import RPi.GPIO as GPIO
 import datetime
+from pygame import Rect
+from pygame.locals import KEYDOWN
 
 width = 1920
 height = 1080
