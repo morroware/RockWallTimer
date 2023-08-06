@@ -67,7 +67,7 @@ whiteColor = pygame.Color(250, 250, 250)
 blackColor = pygame.Color(0, 0, 0)
 
 fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
-msgSurfaceObj = fontObj.render("Climbing Wall Timers", False, whiteColor)
+msgSurfaceObj = fontObj.render("Rock Wall Timers", False, whiteColor)
 msgRectobj = msgSurfaceObj.get_rect()
 msgRectobj.topleft = (2, 0)
 windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
