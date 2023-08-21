@@ -1,65 +1,85 @@
 
-# Rock Wall Timers Controller
+# Rock Climbing Wall Timers
 
-This script is designed to control 3 rock wall timers using a Raspberry Pi. The code is written in Python and uses the Pygame library for the graphical interface, displaying the timers, and the RPi.GPIO library to handle the GPIO pins for reading inputs from physical switches.
+This project provides a timer system for a rock climbing wall with three lanes (Easy, Medium, Hard). Each lane has start and stop buttons, and the system keeps track of the top ten high scores.
 
 ## Features
 
-- Three separate timers for Easy, Medium, and Hard rock wall climbs.
-- Start and Stop controls for each timer.
-- Master reset control to reset all timers.
-- Full-screen graphical interface displaying the current time and timers for each difficulty level.
+- Three separate timers for different difficulty levels.
+- Start and stop buttons for each lane.
+- Sound notification at the top of each lane.
+- Displays the last top ten high scores.
+- Full-screen display using Pygame.
+- Error logging to a file.
 
-## Dependencies
+## Requirements
 
-- [Python 3](https://www.python.org/downloads/)
-- [Pygame](https://www.pygame.org/)
-- [RPi.GPIO](https://pypi.org/project/RPi.GPIO/)
+- Raspberry Pi
+- Python 3
+- Pygame
+- RPi.GPIO
 
-## Hardware Connections
+# How to Use the Rock Climbing Wall Timers Script
 
-- Start switches for Easy, Medium, and Hard timers: Pins 36, 38, 40.
-- Stop switches for Easy, Medium, and Hard timers: Pins 16, 18, 22.
-- Master reset switch: Pin 24.
+This guide provides step-by-step instructions on how to set up and use the rock climbing wall timers script.
 
-## Usage
+## Step 1: Hardware Setup
 
-Run the script on your Raspberry Pi connected to the required switches. The display will initialize, and the timers can be controlled using the physical buttons connected to the pins specified.
+### Connect the Start and Stop Buttons
+- Connect the start buttons for the Easy, Medium, and Hard lanes to the GPIO pins 36, 38, and 40 respectively on the Raspberry Pi.
+- Connect the stop buttons for the Easy, Medium, and Hard lanes to the GPIO pins 16, 18, and 22 respectively.
+- Connect the reset switch to GPIO pin 24.
 
-### Controls
+## Step 2: Software Setup
 
-- **Start Switches**: Begin the respective timers for each difficulty level. If already running, a press will pause and reset the timer.
-- **Stop Switches**: Stop the respective timers for each difficulty level.
-- **Reset Switch**: Master control to reset all timers if any of them are running or to reset the timers to "00:00.0" if none are running.
+### Clone the Repository
+```bash
+git clone https://github.com/your-username/rock-climbing-wall-timers.git
+```
 
-# WIRING: 
-# Start Switches
+### Navigate to the Project Directory
+```bash
+cd rock-climbing-wall-timers
+```
 
-- **Start Switch 1**: Connect one terminal of the switch to GPIO pin 36 (physical numbering) and the other terminal to Ground (GND).
-- **Start Switch 2**: Connect one terminal of the switch to GPIO pin 38 and the other terminal to GND.
-- **Start Switch 3**: Connect one terminal of the switch to GPIO pin 40 and the other terminal to GND.
+### Install the Required Libraries
+```bash
+pip install pygame RPi.GPIO
+```
 
-# Stop Switches
+## Step 3: Running the Script
 
-- **Stop Switch 1**: Connect one terminal of the switch to GPIO pin 16 and the other terminal to GND.
-- **Stop Switch 2**: Connect one terminal of the switch to GPIO pin 18 and the other terminal to GND.
-- **Stop Switch 3**: Connect one terminal of the switch to GPIO pin 22 and the other terminal to GND.
+### Run the Script
+```bash
+python3 rock_wall.py
+```
 
-# Reset Switch
+## Step 4: Using the Timers
 
-- **Reset Switch**: Connect one terminal of the switch to GPIO pin 24 and the other terminal to GND.
+### Start a Timer
+- Press the corresponding start button for the lane you want to time.
 
-# Schematic Overview
+### Stop a Timer
+- Press the corresponding stop button for the lane you want to stop.
 
-Here's an overview of how the connections should be made:
+### Reset All Timers
+- Press the reset switch.
 
-```mathematica
-Start Switch 1: GPIO 36  <-> GND
-Start Switch 2: GPIO 38  <-> GND
-Start Switch 3: GPIO 40  <-> GND
-Stop Switch 1:  GPIO 16  <-> GND
-Stop Switch 2:  GPIO 18  <-> GND
-Stop Switch 3:  GPIO 22  <-> GND
-Reset Switch:   GPIO 24  <-> GND
+## Step 5: Viewing High Scores
+
+- The top ten high scores are displayed on the screen.
+
+## Troubleshooting
+
+- Ensure that the GPIO pins are correctly connected.
+- Check the `error_log.txt` file for any error messages.
+- Make sure the sound file `stop_sound.wav` is in the same directory as the script.
+
+## Conclusion
+
+You should now have a fully functional rock climbing wall timer system with three lanes, sound notifications, and high score tracking. Enjoy your climbing experience!
+
+
+
 
 
