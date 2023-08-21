@@ -1,38 +1,48 @@
 #!/usr/bin/env python3
 
+# Importing required libraries
 import pygame, sys
 import time
 import RPi.GPIO as GPIO
-import datetime
-from pygame import Rect
-from pygame.locals import KEYDOWN
+import traceback
 
-width = 1920
-height = 1080
+# Function to read high scores from a file
+def read_high_scores():
+    try:
+        with open('high_scores.txt', 'r') as file:
+            return [float(line.strip()) for line in file.readlines()]
+    except FileNotFoundError:
+        return [0] * 10
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setwarnings(False)
+# Function to write high scores to a file
+def write_high_scores(scores):
+    with open('high_scores.txt', 'w') as file:
+        for score in scores:
+            file.write(str(score) + '\n')
 
-start_switch1 = 36
-start_switch2 = 38
-start_switch3 = 40
-stop_switch1 = 16
-stop_switch2 = 18
-stop_switch3 = 22
-reset_switch = 24
+# Function to update high scores
+def update_high_scores(score):
+    global high_scores
+    high_scores.append(score)
+    high_scores.sort(reverse=True)
+    high_scores = high_scores[:10]
+    write_high_scores(high_scores)
 
-GPIO.setup(start_switch1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(start_switch2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(start_switch3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(stop_switch1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(stop_switch2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(stop_switch3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(reset_switch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# Function to display high scores
+def display_high_scores():
+    global high_scores
+    fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
+    y_position = int(height/8)
+    for score in high_scores:
+        msgSurfaceObj = fontObj.render(f"High Score: {score}", False, redColor)
+        msgRectobj = msgSurfaceObj.get_rect()
+        msgRectobj.topleft = (0, y_position)
+        windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
+        y_position += int(height/10)
 
-pygame.init()
-windowSurfaceObj = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
-
+# Function to display messages on the screen
 def display(msg, y, col):
+    # Defining colors inside the function
     redColor = pygame.Color(255, 0, 0)
     greyColor = pygame.Color(50, 50, 50)
     whiteColor = pygame.Color(255, 255, 255)
@@ -40,7 +50,7 @@ def display(msg, y, col):
     yellowColor = pygame.Color(255, 255, 0)
 
     fontObj = pygame.font.Font('freesansbold.ttf', int(height/5))
-    pygame.draw.rect(windowSurfaceObj, greyColor, Rect(int(height/1.6), y * int(height/4), width, int(height/5)))
+    pygame.draw.rect(windowSurfaceObj, greyColor, pygame.Rect(int(height/1.6), y * int(height/4), width, int(height/5)))
 
     if len(msg) > 5:
         if col == 0:
@@ -61,17 +71,91 @@ def display(msg, y, col):
     windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
     pygame.display.update()
 
+# Function to handle stopwatch logic
+def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y):
+    max_time = 59
+    if time.time() - timer > 1 and run == 0 and s == 0:
+        display("00:00.0", y, 2)
+
+    if (GPIO.input(start_switch) == 0 and time.time() - timer > 1) or run == 1:
+        if GPIO.input(start_switch) == 0 and run == 1 and time.time() - start_time > 1:
+            run = 0
+            display("00:00.0", y, 1)
+            s = 0
+            m = 0
+            timer = time.time()
+            stop_sound.play()
+            update_high_scores(s + m * 60)
+        elif run == 0:
+            run = 1
+            start_time = time.time()
+            timer = time.time()
+        else:
+            s = int(time.time() - start_time)
+            if s > max_time:
+                m += 1
+                start_time = time.time()
+                s = 0
+            current_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}.0"
+            if current_time != last_displayed_time:
+                display(current_time, y, 2)
+                last_displayed_time = current_time
+
+    return run, s, m, timer, last_displayed_time
+
+# Setting the screen width and height
+width = 1920
+height = 1080
+
+# Setting up the Raspberry Pi's GPIO pins
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+
+# Defining GPIO pins for start and stop switches for three timers and a reset switch
+start_switch1 = 36
+start_switch2 = 38
+start_switch3 = 40
+stop_switch1 = 16
+stop_switch2 = 18
+stop_switch3 = 22
+reset_switch = 24
+
+# Configuring the GPIO pins as input with pull-up resistors
+GPIO.setup(start_switch1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(start_switch2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(start_switch3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(stop_switch1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(stop_switch2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(stop_switch3, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(reset_switch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# Initializing pygame and the pygame mixer
+pygame.init()
+pygame.mixer.init()
+
+# Loading the stop sound
+stop_sound = pygame.mixer.Sound('stop_sound.wav')
+
+# Creating a fullscreen window
+windowSurfaceObj = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
+
+# Read high scores from file
+high_scores = read_high_scores()
+
+# Defining colors
 redColor = pygame.Color(255, 0, 0)
 greyColor = pygame.Color(50, 50, 50)
 whiteColor = pygame.Color(250, 250, 250)
 blackColor = pygame.Color(0, 0, 0)
 
+# Displaying the title
 fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
-msgSurfaceObj = fontObj.render("Rock Wall Timers", False, whiteColor)
+msgSurfaceObj = fontObj.render("Climbing Wall Timers", False, whiteColor)
 msgRectobj = msgSurfaceObj.get_rect()
 msgRectobj.topleft = (2, 0)
 windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
 
+# Displaying initial labels and timers
 fontObj = pygame.font.Font('freesansbold.ttf', int(height/5))
 display("Easy:", 1, 0)
 display("Hard:", 2, 0)
@@ -82,6 +166,7 @@ display("00:00.0", 3, 1)
 
 pygame.display.update()
 
+# Initializing variables for timers
 run1 = 0
 run2 = 0
 run3 = 0
@@ -94,153 +179,50 @@ m3 = 0
 timer1 = time.time()
 timer2 = time.time()
 timer3 = time.time()
-max_time = 59
-
-# Define variables to store the last displayed time for each stopwatch
 last_displayed_time1 = "00:00.0"
 last_displayed_time2 = "00:00.0"
 last_displayed_time3 = "00:00.0"
 
+# Main loop
 while True:
-    now = datetime.datetime.now()
-    pygame.draw.rect(windowSurfaceObj, blackColor, Rect(0, int(height/8), int(width/3), int(height/7)))
-    fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
-    msgSurfaceObj = fontObj.render(str(now)[11:19], False, redColor)
-    msgRectobj = msgSurfaceObj.get_rect()
-    msgRectobj.topleft = (0, int(height/8))
-    windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
+    try:
+        # Clearing the screen
+        pygame.draw.rect(windowSurfaceObj, blackColor, pygame.Rect(0, int(height/8), int(width/3), int(height/7) * 10))
 
-    # Stopwatch 1
-    if time.time() - timer1 > 1 and run1 == 0 and s1 == 0:
-        display("00:00.0", 1, 2)
+        # Displaying high scores
+        display_high_scores()
 
-    if (GPIO.input(start_switch1) == 0 and time.time() - timer1 > 1) or run1 == 1:
-        if GPIO.input(start_switch1) == 0 and run1 == 1 and time.time() - start_time1 > 1:
+        # Handling the three stopwatches
+        run1, s1, m1, timer1, last_displayed_time1 = handle_stopwatch(start_switch1, stop_switch1, run1, s1, m1, timer1, last_displayed_time1, 1)
+        run2, s2, m2, timer2, last_displayed_time2 = handle_stopwatch(start_switch2, stop_switch2, run2, s2, m2, timer2, last_displayed_time2, 2)
+        run3, s3, m3, timer3, last_displayed_time3 = handle_stopwatch(start_switch3, stop_switch3, run3, s3, m3, timer3, last_displayed_time3, 3)
+
+        # Handling reset switch
+        if GPIO.input(reset_switch) == 0:
             run1 = 0
-            display("00:00.0", 1, 1)
-            s1 = 0
-            timer1 = time.time()
-        elif run1 == 0 and s1 == 0:
-            start_time1 = time.time()
-            run1 = 1
-        elif run1 == 0 and s1 > 0:
-            display("00:00.0", 1, 1)
-            s1 = 0
-            timer1 = time.time()
-
-        if run1 == 1:
-            now = time.time() - start_time1
-            m1, s1 = divmod(now, 60)
-            h1, m1 = divmod(m1, 60)
-            msg = "%02d:%02d" % (m1, s1)
-            psec = str(now - int(now))
-            pstr = psec[1:3]
-            msg = msg + str(pstr)
-
-            # Update the display only when a new run starts or stops
-            if last_displayed_time1 != msg:
-                display(msg, 1, 0)
-                last_displayed_time1 = msg  # Store the current time as the last displayed time
-
-
-
-
-    # Stopwatch 2
-    if time.time() - timer2 > 1 and run2 == 0 and s2 == 0:
-        display("00:00.0", 2, 2)
-
-    if (GPIO.input(start_switch2) == 0 and time.time() - timer2 > 1) or run2 == 1:
-        if GPIO.input(start_switch2) == 0 and run2 == 1 and time.time() - start_time2 > 1:
             run2 = 0
-            display("00:00.0", 2, 1)
-            s2 = 0
-            timer2 = time.time()
-        elif run2 == 0 and s2 == 0:
-            start_time2 = time.time()
-            run2 = 1
-        elif run2 == 0 and s2 > 0:
-            display("00:00.0", 2, 1)
-            s2 = 0
-            timer2 = time.time()
-
-        if run2 == 1:
-            now = time.time() - start_time2
-            m2, s2 = divmod(now, 60)
-            h2, m2 = divmod(m2, 60)
-            msg = "%02d:%02d" % (m2, s2)
-            psec = str(now - int(now))
-            pstr = psec[1:3]
-            msg = msg + str(pstr)
-
-            # Update the display only when a new run starts or stops
-            if last_displayed_time2 != msg:
-                display(msg, 2, 0)
-                last_displayed_time2 = msg  # Store the current time as the last displayed time
-
-    # Stopwatch 3
-    if time.time() - timer3 > 1 and run3 == 0 and s3 == 0:
-        display("00:00.0", 3, 2)
-
-    if (GPIO.input(start_switch3) == 0 and time.time() - timer3 > 1) or run3 == 1:
-        if GPIO.input(start_switch3) == 0 and run3 == 1 and time.time() - start_time3 > 1:
             run3 = 0
-            display("00:00.0", 3, 1)
+            s1 = 0
+            s2 = 0
             s3 = 0
+            m1 = 0
+            m2 = 0
+            m3 = 0
+            timer1 = time.time()
+            timer2 = time.time()
             timer3 = time.time()
-        elif run3 == 0 and s3 == 0:
-            start_time3 = time.time()
-            run3 = 1
-        elif run3 == 0 and s3 > 0:
+            display("00:00.0", 1, 1)
+            display("00:00.0", 2, 1)
             display("00:00.0", 3, 1)
-            s3 = 0
-            timer3 = time.time()
+            stop_sound.play()
 
-        if run3 == 1:
-            now = time.time() - start_time3
-            m3, s3 = divmod(now, 60)
-            h3, m3 = divmod(m3, 60)
-            msg = "%02d:%02d" % (m3, s3)
-            psec = str(now - int(now))
-            pstr = psec[1:3]
-            msg = msg + str(pstr)
+        # Updating the display
+        pygame.display.update()
 
-            # Update the display only when a new run starts or stops
-            if last_displayed_time3 != msg:
-                display(msg, 3, 0)
-                last_displayed_time3 = msg  # Store the current time as the last displayed time
-
-    # Check for stop buttons
-    if (GPIO.input(stop_switch1) == 0 and run1 == 1) or m1 == int(max_time):
-        run1 = 0
-
-    if (GPIO.input(stop_switch2) == 0 and run2 == 1) or m2 == int(max_time):
-        run2 = 0
-
-    if (GPIO.input(stop_switch3) == 0 and run3 == 1) or m3 == int(max_time):
-        run3 = 0
-
-    # Master stop and reset
-    if GPIO.input(reset_switch) == 0 and (run1 == 1 or run2 == 1 or run3 == 1):
-        run1 = 0
-        run2 = 0
-        run3 = 0
-        time.sleep(0.25)
-
-    if GPIO.input(reset_switch) == 0 and run1 == 0 and run2 == 0 and run3 == 0:
-        run1 = 0
-        run2 = 0
-        run3 = 0
-        s1 = 0
-        s2 = 0
-        s3 = 0
-        display("00:00.0", 1, 1)
-        display("00:00.0", 2, 1)
-        display("00:00.0", 3, 1)
-        timer1 = time.time()
-        timer2 = time.time()
-        timer3 = time.time()
-
-    for event in pygame.event.get():
-        if event.type == KEYDOWN:
-            if event.key == 27:
-                pygame.quit()
+    except Exception as e:
+        # Logging errors to a file
+        with open('error_log.txt', 'a') as file:
+            file.write(str(datetime.datetime.now()) + '\n')
+            file.write(str(e) + '\n')
+            traceback.print_exc(file=file)
+            file.write('\n')
