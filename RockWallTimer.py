@@ -7,53 +7,52 @@ import RPi.GPIO as GPIO
 import traceback
 import datetime
 
+# Global variable to track the horizontal position of the high scores
+scroll_position = 0
+
 # Function to read high scores from a file
 def read_high_scores():
-    # Read high scores from file and return as a list of floats
     try:
         with open('high_scores.txt', 'r') as file:
             return [float(line.strip()) for line in file.readlines()]
     except FileNotFoundError:
-        # If file not found, return a list of ten zeros
         return [0] * 10
 
 # Function to write high scores to a file
 def write_high_scores(scores):
-    # Write high scores to a file, one score per line
     with open('high_scores.txt', 'w') as file:
         for score in scores:
             file.write(str(score) + '\n')
 
 # Function to update high scores
 def update_high_scores(score):
-    # Append new score, sort in descending order, and keep the top 10 scores
     global high_scores
     high_scores.append(score)
     high_scores.sort(reverse=True)
     high_scores = high_scores[:10]
     write_high_scores(high_scores)
 
-# Function to display high scores on the screen
-def display_high_scores():
-    # Display the high scores on the screen with specified font size and position
+# Function to render and scroll the high scores
+def scroll_high_scores():
     global high_scores
-    fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
+    global scroll_position
+    fontObj = pygame.font.Font('freesansbold.ttf', int(height/20))
     y_position = int(height/8)
-    for score in high_scores:
-        msgSurfaceObj = fontObj.render(f"High Score: {score}", False, redColor)
-        msgRectobj = msgSurfaceObj.get_rect()
-        msgRectobj.topleft = (0, y_position)
-        windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
-        y_position += int(height/10)
+    text = "High Scores: " + " | ".join([f"{idx+1}. {score}" for idx, score in enumerate(high_scores)])
+    msgSurfaceObj = fontObj.render(text, False, redColor)
+    msgRectobj = msgSurfaceObj.get_rect()
+    msgRectobj.topleft = (scroll_position, y_position)
+    windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
+    scroll_position -= 5  # Speed of scrolling
+    if scroll_position < -msgRectobj.width:
+        scroll_position = width  # Reset to the right side of the screen
 
 # Function to display messages on the screen
 def display(msg, y, col):
-    # Display messages on the screen with specified font size, position, and color
     fontObj = pygame.font.Font('freesansbold.ttf', int(height/5))
     pygame.draw.rect(windowSurfaceObj, greyColor, pygame.Rect(int(height/1.6), y * int(height/4), width, int(height/5)))
 
     if len(msg) > 5:
-        # Choose color based on the parameter col
         if col == 0:
             msgSurfaceObj = fontObj.render(msg, False, redColor)
         elif col == 1:
@@ -74,14 +73,12 @@ def display(msg, y, col):
 
 # Function to handle stopwatch logic
 def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y):
-    # Handling stopwatch logic including starting, stopping, and displaying the timer
     max_time = 59
     if time.time() - timer > 1 and run == 0 and s == 0:
         display("00:00.0", y, 2)
 
     if (GPIO.input(start_switch) == 0 and time.time() - timer > 1) or run == 1:
-        # If start button is pressed while running or stop button is pressed, stop the timer
-        if (GPIO.input(stop_switch) == 0 and run == 1 and time.time() - start_time > 1) or (GPIO.input(start_switch) == 0 and run == 1 and time.time() - start_time > 1):
+        if GPIO.input(start_switch) == 0 and run == 1 and time.time() - start_time > 1:
             run = 0
             display("00:00.0", y, 1)
             s = 0
@@ -90,12 +87,10 @@ def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed
             stop_sound.play()
             update_high_scores(s + m * 60)
         elif run == 0:
-            # If start button is pressed while not running, start the timer
             run = 1
             start_time = time.time()
             timer = time.time()
         else:
-            # Update the displayed time
             s = int(time.time() - start_time)
             if s > max_time:
                 m += 1
@@ -152,6 +147,7 @@ redColor = pygame.Color(255, 0, 0)
 greyColor = pygame.Color(50, 50, 50)
 whiteColor = pygame.Color(250, 250, 250)
 blackColor = pygame.Color(0, 0, 0)
+yellowColor = pygame.Color(255, 255, 0)
 
 # Displaying the title
 fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
@@ -191,7 +187,6 @@ last_displayed_time3 = "00:00.0"
 # Main loop
 try:
     while True:
-        # Handling keyboard input, including exiting with the ESC key
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Press ESC to exit
                 pygame.quit()
@@ -201,8 +196,8 @@ try:
         # Clearing the screen
         pygame.draw.rect(windowSurfaceObj, blackColor, pygame.Rect(0, int(height/8), int(width/3), int(height/7) * 10))
 
-        # Displaying high scores
-        display_high_scores()
+        # Render and scroll the high scores
+        scroll_high_scores()
 
         # Handling the three stopwatches
         run1, s1, m1, timer1, last_displayed_time1 = handle_stopwatch(start_switch1, stop_switch1, run1, s1, m1, timer1, last_displayed_time1, 1)
@@ -211,7 +206,6 @@ try:
 
         # Handling reset switch
         if GPIO.input(reset_switch) == 0:
-            # Reset all timers
             run1 = 0
             run2 = 0
             run3 = 0
@@ -243,3 +237,4 @@ finally:
     # Ensure that resources are released even if an exception occurs
     pygame.quit()
     GPIO.cleanup()
+
