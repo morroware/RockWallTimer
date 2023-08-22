@@ -29,7 +29,7 @@ def update_high_scores(score):
     high_scores = high_scores[:10]
     write_high_scores(high_scores)
 
-# Function to display high scores
+# Function to display high scores on the screen
 def display_high_scores():
     global high_scores
     fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
@@ -43,12 +43,6 @@ def display_high_scores():
 
 # Function to display messages on the screen
 def display(msg, y, col):
-    redColor = pygame.Color(255, 0, 0)
-    greyColor = pygame.Color(50, 50, 50)
-    whiteColor = pygame.Color(255, 255, 255)
-    greenColor = pygame.Color(0, 255, 0)
-    yellowColor = pygame.Color(255, 255, 0)
-
     fontObj = pygame.font.Font('freesansbold.ttf', int(height/5))
     pygame.draw.rect(windowSurfaceObj, greyColor, pygame.Rect(int(height/1.6), y * int(height/4), width, int(height/5)))
 
