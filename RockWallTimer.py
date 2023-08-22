@@ -5,6 +5,7 @@ import pygame, sys
 import time
 import RPi.GPIO as GPIO
 import traceback
+import datetime
 
 # Function to read high scores from a file
 def read_high_scores():
@@ -42,7 +43,6 @@ def display_high_scores():
 
 # Function to display messages on the screen
 def display(msg, y, col):
-    # Defining colors inside the function
     redColor = pygame.Color(255, 0, 0)
     greyColor = pygame.Color(50, 50, 50)
     whiteColor = pygame.Color(255, 255, 255)
@@ -184,8 +184,14 @@ last_displayed_time2 = "00:00.0"
 last_displayed_time3 = "00:00.0"
 
 # Main loop
-while True:
-    try:
+try:
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Press ESC to exit
+                pygame.quit()
+                GPIO.cleanup()  # Cleanup GPIO resources
+                sys.exit()
+
         # Clearing the screen
         pygame.draw.rect(windowSurfaceObj, blackColor, pygame.Rect(0, int(height/8), int(width/3), int(height/7) * 10))
 
@@ -219,10 +225,14 @@ while True:
         # Updating the display
         pygame.display.update()
 
-    except Exception as e:
-        # Logging errors to a file
-        with open('error_log.txt', 'a') as file:
-            file.write(str(datetime.datetime.now()) + '\n')
-            file.write(str(e) + '\n')
-            traceback.print_exc(file=file)
-            file.write('\n')
+except Exception as e:
+    # Logging errors to a file
+    with open('error_log.txt', 'a') as file:
+        file.write(str(datetime.datetime.now()) + '\n')
+        file.write(str(e) + '\n')
+        traceback.print_exc(file=file)
+        file.write('\n')
+finally:
+    # Ensure that resources are released even if an exception occurs
+    pygame.quit()
+    GPIO.cleanup()
