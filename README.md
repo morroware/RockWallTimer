@@ -1,99 +1,125 @@
+# Rock Wall Timers
 
-# Rock Wall Timer System with Raspberry Pi
+A multi-timer system suitable for a Rock wall or similar applications, designed to run on a Raspberry Pi. This code leverages Python, Pygame, and the Raspberry Pi's GPIO capabilities to manage and display three individual timers with start, stop, and reset functionality.
 
-This guide will walk you through setting up a timer system for a rock-climbing wall with three lanes using a Raspberry Pi. The system will control and display timers for each lane, track the top 10 high scores, and allow users to start, stop, and reset the timers using physical switches.
+## Features
 
-## Requirements
+### Three Individual Timers
 
-### Hardware
-- **Raspberry Pi** (any model with GPIO pins)
-- **3 Start Switches**: For starting/stopping the timers for each lane
-- **1 Reset Switch**: For resetting all timers
-- **Monitor/Screen**: For displaying the timers and high scores
-- **Speakers**: For playing a sound when a timer is stopped
+- Manage three separate stopwatches labeled Easy, Medium, and Hard.
+- Track time, update the display, and handle start and stop controls for each timer.
 
-### Software
-- **Python 3.x**
-- **Pygame**: For the graphical interface
-- **RPi.GPIO**: For interfacing with the GPIO pins
+### Start, Stop, and Reset Buttons
 
-## Hardware Setup
+- Control timers using physical buttons connected to the Raspberry Pi's GPIO pins.
+- Three start buttons to initiate timers.
+- Three stop buttons to halt timers.
+- A reset button to reset all timers simultaneously.
 
-### Connections
-Connect the start and reset switches to the Raspberry Pi's GPIO pins as follows:
+### High Scores
 
-- **Start Switches**:
-  - Lane 1: GPIO 36
-  - Lane 2: GPIO 38
-  - Lane 3: GPIO 40
-- **Stop Switches**:
-  - Lane 1: GPIO 16
-  - Lane 2: GPIO 18
-  - Lane 3: GPIO 22
-- **Reset Switch**: GPIO 24
+- Maintain and display a list of the top 10 high scores.
+- High scores are stored in a text file, and the top scores are displayed on the screen.
 
-All switches should be connected with pull-up resistors. Connect one end of the switch to the corresponding GPIO pin and the other end to the ground (GND) pin.
+### Sound Effects
 
-## Software Setup
+- Play a sound effect when a timer is stopped, enhancing user interaction.
 
-### Installing Dependencies
+### Fullscreen Display
 
-1. **Install Python 3.x**: If not already installed on your Raspberry Pi.
-2. **Install Pygame**: Run the following command:
+- Utilize a fullscreen graphical user interface (GUI) to display the timers, high scores, and labels.
+
+### Error Handling
+
+- Robust error handling, logging exceptions to a file with timestamps and tracebacks.
+
+## Getting Started
+
+### Setting Up Rock Wall Timers with Raspberry Pi and Seven Buttons
+
+This guide will walk you through the process of setting up the Rock Wall Timers script on a Raspberry Pi, complete with seven physical buttons for controlling the timers.
+
+#### Prerequisites
+
+- Raspberry Pi (any model with GPIO pins)
+- Seven tactile buttons
+- Jumper wires
+- Breadboard (optional)
+- Python 3 and Pygame installed
+
+#### Step-by-Step Guide
+
+##### Step 1: Connect the Buttons
+
+1. **Connect the Start Buttons**:
+   - Connect three start buttons to GPIO pins 36, 38, and 40 on the Raspberry Pi.
+   - Connect the other terminal of each button to Ground (GND).
+
+2. **Connect the Stop Buttons**:
+   - Connect three stop buttons to GPIO pins 16, 18, and 22 on the Raspberry Pi.
+   - Connect the other terminal of each button to Ground (GND).
+
+3. **Connect the Reset Button**:
+   - Connect the reset button to GPIO pin 24 on the Raspberry Pi.
+   - Connect the other terminal of the button to Ground (GND).
+
+##### Software Setup
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/yourusername/Rock-wall-timers.git
+   cd Rock-wall-timers
    ```
-   pip3 install pygame
+
+2. **Install Dependencies**:
+   ```bash
+   sudo apt-get update
+   sudo apt-get install python3 python3-pygame
    ```
-3. **Install RPi.GPIO**: It should be pre-installed with Raspbian. If not, run:
+
+3. **Running the Code**:
+   ```bash
+   python3 Rock_wall_timers.py
    ```
-   pip3 install RPi.GPIO
-   ```
 
-### Code Setup
+#### Usage
 
-1. **Copy the Code**: Copy the provided Python code into a file named `rock_wall_timer.py`.
-2. **Add Sound and Font Files**: Place `stop_sound.wav` and `freesansbold.ttf` in the same directory as the Python script.
+- **Start a Timer**: Press a start button.
+- **Stop a Timer**: Press the corresponding stop button or the same start button again.
+- **Reset All Timers**: Press the reset button.
+- **View High Scores**: High scores are displayed on the screen.
+- **Exit the Program**: Press the ESC key.
 
-### High Scores File
+### Running the Script at Boot
 
-Create a file named `high_scores.txt` in the same directory as the script, with the initial high scores (optional). For example:
+If you want the Rock Wall Timers script to run automatically when the Raspberry Pi boots up, you can set up a cron job using `crontab` and edit it with the `nano` text editor. Follow these steps:
 
-```plaintext
-120.0
-115.5
-110.0
-100.0
-95.5
-90.0
-85.0
-80.5
-75.0
-70.0
-```
+1. **Open Terminal**:
+   - Open a terminal window on your Raspberry Pi.
 
-### Running the Code
+2. **Edit the Crontab**:
+   - Type `crontab -e` to edit the user's crontab using the `nano` editor (or any other editor you prefer).
+   - If prompted to choose an editor, select `nano`.
 
-Run the Python script using the following command:
+3. **Add the Cron Job**:
+   - Scroll to the end of the file, and on a new line, add the following:
+     ```plaintext
+     @reboot python3 /path/to/your/script/Rock_wall_timers.py
+     ```
+     Replace `/path/to/your/script/` with the actual path to the script.
 
-```bash
-python3 rock_wall_timer.py
-```
+4. **Save and Exit**:
+   - Press `CTRL + O` to write the changes.
+   - Press `ENTER` to confirm.
+   - Press `CTRL + X` to exit `nano`.
 
-## Usage
+5. **Verify the Cron Job**:
+   - Type `crontab -l` to list all cron jobs and make sure your entry is correct.
 
-- **Start/Stop a Timer**: Press the corresponding start switch for the lane. Press it again to stop the timer and record the time if it's a high score.
-- **Reset All Timers**: Press the reset switch.
-- **Exit**: Press the Escape key on a connected keyboard.
+6. **Reboot to Test**:
+   - You can reboot your Raspberry Pi to test the script:
+     ```bash
+     sudo reboot
+     ```
 
-## Troubleshooting
-
-- **Ensure Correct Permissions**: Make sure you have the necessary permissions to access the GPIO pins.
-- **Check File Paths**: Ensure that the sound, font, and high scores files are in the correct location.
-- **Monitor Resolution**: Adjust the `width` and `height` variables in the code to match your screen's resolution.
-
-## Conclusion
-
-This rock wall timer system provides a fun and interactive way to track climbing times and compete for high scores. It's a versatile system that can be customized for different setups and extended with additional features as needed.
-
-
-
-
+The Rock Wall Timers script should now start automatically at boot. If you encounter any issues, refer to the [Troubleshooting Guide](TROUBLESHOOTING.md).
