@@ -74,33 +74,36 @@ def display(msg, y, col):
 # Function to handle stopwatch logic
 def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y):
     max_time = 59
+    
+    # Check if the time has passed 1 second and the stopwatch is not running (run == 0) and seconds (s) is 0
     if time.time() - timer > 1 and run == 0 and s == 0:
-        display("00:00.0", y, 2)
+        display("00:00.0", y, 2)  # Display "00:00.0" at position y with display mode 2
 
-    if (GPIO.input(start_switch) == 0 and time.time() - timer > 1) or run == 1:
-        if GPIO.input(start_switch) == 0 and run == 1 and time.time() - start_time > 1:
-            run = 0
-            display("00:00.0", y, 1)
-            s = 0
-            m = 0
-            timer = time.time()
-            stop_sound.play()
-            update_high_scores(s + m * 60)
-        elif run == 0:
+    # Check if the start button is pressed (start_switch == 0) and time has passed 1 second,
+    # or if the stopwatch is already running (run == 1)
+    if GPIO.input(start_switch) == 0 and time.time() - timer > 1:
+        if run == 0:
             run = 1
             start_time = time.time()
             timer = time.time()
         else:
-            s = int(time.time() - start_time)
-            if s > max_time:
-                m += 1
-                start_time = time.time()
-                s = 0
-            current_time = f"{str(m).zfill(2)}:{str(s).zfill(2)}.0"
-            if current_time != last_displayed_time:
-                display(current_time, y, 2)
-                last_displayed_time = current_time
+            run = 0  # Reset the stopwatch and start anew
+            display("00:00.0", y, 1)  # Display "00:00.0" at position y with display mode 1
+            s = 0
+            m = 0
+            timer = time.time()
 
+    # Check if the stop button is pressed (stop_switch == 0)
+    if GPIO.input(stop_switch) == 0 and run == 1:
+        run = 0
+        display("00:00.0", y, 1)  # Display "00:00.0" at position y with display mode 1
+        s = 0
+        m = 0
+        timer = time.time()
+        stop_sound.play()  # Play a stop sound (assuming this is a sound object)
+        update_high_scores(s + m * 60)  # Update high scores based on total time
+        
+    return run, s, m, timer, last_displayed_time
     return run, s, m, timer, last_displayed_time
 
 # Setting the screen width and height
