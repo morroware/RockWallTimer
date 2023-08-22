@@ -122,4 +122,4 @@ If you want the Rock Wall Timers script to run automatically when the Raspberry 
      sudo reboot
      ```
 
-The Rock Wall Timers script should now start automatically at boot. If you encounter any issues, refer to the [Troubleshooting Guide](TROUBLESHOOTING.md).
+The Rock Wall Timers script should now start automatically at boot. If you encounter any issues, refer to the [Troubleshooting Guide](troubleshooting.md).
