@@ -76,7 +76,7 @@ def display(msg, y, col):
     pygame.display.update()
 
 # Function to handle stopwatch logic, including displaying the running time
-def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y):
+def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y, last_start_time, last_stop_time):
     max_time = 59
 
     # Check if the stopwatch is already running (run == 1)
@@ -94,7 +94,8 @@ def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed
         display("00:00.0", y, 2)  # Display "00:00.0" at position y with display mode 2
 
     # Check if the start button is pressed (start_switch == 0) and time has passed 1 second
-    if GPIO.input(start_switch) == 0 and time.time() - timer > 1:
+    if GPIO.input(start_switch) == 0 and pygame.time.get_ticks() - last_start_time > debounce_time:
+        last_start_time = pygame.time.get_ticks()
         if run == 0:
             run = 1
             timer = time.time()
@@ -106,7 +107,8 @@ def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed
             timer = time.time()
 
     # Check if the stop button is pressed (stop_switch == 0)
-    if GPIO.input(stop_switch) == 0 and run == 1:
+    if GPIO.input(stop_switch) == 0 and run == 1 and pygame.time.get_ticks() - last_stop_time > debounce_time:
+        last_stop_time = pygame.time.get_ticks()
         total_time = s + m * 60  # Calculate total time before resetting
         run = 0
         display("00:00.0", y, 1)  # Display "00:00.0" at position y with display mode 1
@@ -115,8 +117,8 @@ def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed
         timer = time.time()
         stop_sound.play()  # Play a stop sound (assuming this is a sound object)
         update_high_scores(total_time)  # Update high scores based on total time
-        
-    return run, s, m, timer, last_displayed_time
+
+    return run, s, m, timer, last_displayed_time, last_start_time, last_stop_time
 
 # Setting up the Raspberry Pi's GPIO pins
 GPIO.setmode(GPIO.BOARD)
@@ -154,12 +156,12 @@ windowSurfaceObj = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
 high_scores = read_high_scores()
 
 # Defining colors
-redColor = pygame.Color(255, 0, 0)
+redColor = pygame.Color(255, 0, 0)  # Ensure this color is defined
 greyColor = pygame.Color(50, 50, 50)
 whiteColor = pygame.Color(250, 250, 250)
 blackColor = pygame.Color(0, 0, 0)
 yellowColor = pygame.Color(255, 255, 0)
-greenColor = pygame.Color(0, 255, 0) # Added green color definition
+greenColor = pygame.Color(0, 255, 0)  # Added green color definition
 
 # Displaying the title
 fontObj = pygame.font.Font('freesansbold.ttf', int(height/10))
@@ -196,6 +198,18 @@ last_displayed_time1 = "00:00.0"
 last_displayed_time2 = "00:00.0"
 last_displayed_time3 = "00:00.0"
 
+# Variables to track the last press time for each button (for debouncing)
+last_start_time1 = 0
+last_start_time2 = 0
+last_start_time3 = 0
+last_stop_time1 = 0
+last_stop_time2 = 0
+last_stop_time3 = 0
+last_reset_time = 0
+
+# Debounce time in milliseconds
+debounce_time = 200
+
 # Main loop
 try:
     while True:
@@ -211,13 +225,14 @@ try:
         # Render and scroll the high scores
         scroll_high_scores()
 
-        # Handling the three stopwatches
-        run1, s1, m1, timer1, last_displayed_time1 = handle_stopwatch(start_switch1, stop_switch1, run1, s1, m1, timer1, last_displayed_time1, 1)
-        run2, s2, m2, timer2, last_displayed_time2 = handle_stopwatch(start_switch2, stop_switch2, run2, s2, m2, timer2, last_displayed_time2, 2)
-        run3, s3, m3, timer3, last_displayed_time3 = handle_stopwatch(start_switch3, stop_switch3, run3, s3, m3, timer3, last_displayed_time3, 3)
+        # Handling the three stopwatches with debouncing
+        run1, s1, m1, timer1, last_displayed_time1, last_start_time1, last_stop_time1 = handle_stopwatch(start_switch1, stop_switch1, run1, s1, m1, timer1, last_displayed_time1, 1, last_start_time1, last_stop_time1)
+        run2, s2, m2, timer2, last_displayed_time2, last_start_time2, last_stop_time2 = handle_stopwatch(start_switch2, stop_switch2, run2, s2, m2, timer2, last_displayed_time2, 2, last_start_time2, last_stop_time2)
+        run3, s3, m3, timer3, last_displayed_time3, last_start_time3, last_stop_time3 = handle_stopwatch(start_switch3, stop_switch3, run3, s3, m3, timer3, last_displayed_time3, 3, last_start_time3, last_stop_time3)
 
-        # Handling reset switch
-        if GPIO.input(reset_switch) == 0:
+        # Handling reset switch with debouncing
+        if GPIO.input(reset_switch) == 0 and pygame.time.get_ticks() - last_reset_time > debounce_time:
+            last_reset_time = pygame.time.get_ticks()
             run1 = 0
             run2 = 0
             run3 = 0
@@ -252,4 +267,3 @@ finally:
     # Ensure that resources are released even if an exception occurs
     pygame.quit()
     GPIO.cleanup()
-
