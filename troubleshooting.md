@@ -31,7 +31,7 @@ The timers do not respond to the start, stop, or reset buttons.
 3. **Check for Errors in the Error Logs**:
    - Review the error logs in the `error_log.txt` file within the script's directory. This file contains detailed information about any exceptions or errors that occurred, including timestamps and tracebacks.
 
-3. **Check for Errors in Terminal**:
+4. **Check for Errors in Terminal**:
    - Run the script in the terminal and look for error messages or exceptions.
 
 ## High Scores Aren't Being Saved
@@ -47,6 +47,9 @@ High scores are not being saved to the text file or are not being displayed corr
 
 2. **Check File Path**:
    - Verify that the path to the high scores file is correct within the script.
+  
+3. **Check for Errors in the Error Logs**:
+   - Review the error logs in the `error_log.txt` file within the script's directory. This file contains detailed information about any exceptions or errors that occurred, including timestamps and tracebacks.
 
 ## Sound Not Playing
 
@@ -105,5 +108,8 @@ The display is not rendering correctly, or the font size and layout appear disto
 
 3. **Check for Errors in Terminal**:
    - Run the script in the terminal and look for error messages or exceptions related to the display.
+   - 
+4. **Check for Errors in the Error Logs**:
+   - Review the error logs in the `error_log.txt` file within the script's directory. This file contains detailed information about any exceptions or errors that occurred, including timestamps and tracebacks.
 
 If you encounter any issues not covered in this guide, please [open an issue](https://github.com/yourusername/Rock-wall-timers/issues) on GitHub or contact the maintainers directly.
