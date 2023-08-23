@@ -1,6 +1,7 @@
+
 # Rock Wall Timers
 
-A multi-timer system suitable for a Rock wall or similar applications, designed to run on a Raspberry Pi. This code leverages Python, Pygame, and the Raspberry Pi's GPIO capabilities to manage and display three individual timers with start, stop, and reset functionality.
+A multi-timer system suitable for a rock wall or similar applications, designed to run on a Raspberry Pi. This code leverages Python, Pygame, and the Raspberry Pi's GPIO capabilities to manage and display three individual timers with start, stop, and reset functionality, as well as scrolling high scores.
 
 ## Features
 
@@ -8,6 +9,7 @@ A multi-timer system suitable for a Rock wall or similar applications, designed 
 
 - Manage three separate stopwatches labeled Easy, Medium, and Hard.
 - Track time, update the display, and handle start and stop controls for each timer.
+- High scores functionality to record and display the top 10 best times.
 
 ### Start, Stop, and Reset Buttons
 
@@ -15,11 +17,12 @@ A multi-timer system suitable for a Rock wall or similar applications, designed 
 - Three start buttons to initiate timers.
 - Three stop buttons to halt timers.
 - A reset button to reset all timers simultaneously.
+- Debouncing implementation to prevent false or repeated triggering of the switches.
 
 ### High Scores
 
-- Maintain and display a list of the top 10 high scores.
-- High scores are stored in a text file, and the top scores are displayed on the screen.
+- Maintain and display a scrolling list of the top 10 high scores.
+- High scores are stored in a text file, and the top scores are scrolled on the screen.
 
 ### Sound Effects
 
@@ -27,11 +30,13 @@ A multi-timer system suitable for a Rock wall or similar applications, designed 
 
 ### Fullscreen Display
 
-- Utilize a fullscreen graphical user interface (GUI) to display the timers, high scores, and labels.
+- Utilize a fullscreen graphical user interface (GUI) to display the timers, high scores, labels, and additional messages.
+- Dynamic display with various font sizes, colors, and styles based on context.
 
 ### Error Handling
 
 - Robust error handling, logging exceptions to a file with timestamps and tracebacks.
+- Cleanup of GPIO resources ensures that the system is left in a clean state even if an exception occurs.
 
 ## Getting Started
 
@@ -46,6 +51,7 @@ This guide will walk you through the process of setting up the Rock Wall Timers 
 - Jumper wires
 - Breadboard (optional)
 - Python 3 and Pygame installed
+- Sound file (e.g., `stop_sound.wav`) for the stop sound effect
 
 #### Step-by-Step Guide
 
@@ -92,7 +98,7 @@ This guide will walk you through the process of setting up the Rock Wall Timers 
 
 ### Running the Script at Boot
 
-If you want the Rock Wall Timers script to run automatically when the Raspberry Pi boots up, you can set up a cron job using `crontab` and edit it with the `nano` text editor. Follow these steps:
+If you want the Rock Wall Timers script to run automatically when the Raspberry Pi boots up, you can set up a cron job using \`crontab\` and edit it with the \`nano\` text editor. Follow these steps:
 
 1. **Open Terminal**:
    - Open a terminal window on your Raspberry Pi.
@@ -110,7 +116,7 @@ If you want the Rock Wall Timers script to run automatically when the Raspberry 
 
 4. **Save and Exit**:
    - Press `CTRL + O` to write the changes.
-   - Press `ENTER` to confirm.
+   - Press `ENTER\` to confirm.
    - Press `CTRL + X` to exit `nano`.
 
 5. **Verify the Cron Job**:
@@ -123,3 +129,4 @@ If you want the Rock Wall Timers script to run automatically when the Raspberry 
      ```
 
 The Rock Wall Timers script should now start automatically at boot. If you encounter any issues, refer to the [Troubleshooting Guide](troubleshooting.md).
+
