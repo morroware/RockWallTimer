@@ -238,6 +238,9 @@ try:
         # Updating the display
         pygame.display.update()
 
+        # Adding a small delay to reduce CPU usage
+        pygame.time.delay(10)
+
 except Exception as e:
     # Logging errors to a file
     with open('error_log.txt', 'a') as file:
