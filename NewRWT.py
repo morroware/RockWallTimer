@@ -249,3 +249,4 @@ finally:
     # Ensure that resources are released even if an exception occurs
     pygame.quit()
     GPIO.cleanup()
+
