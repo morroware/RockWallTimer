@@ -31,7 +31,6 @@ greenColor = pygame.Color(0, 255, 0)
 # Global variable to track the horizontal position of the high scores
 scroll_position = 0
 
-
 # Function to read high scores from a file
 def read_high_scores():
     try:
@@ -96,7 +95,6 @@ def display(msg, y, col):
 
     windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
     pygame.display.update()
-
 # Function to handle stopwatch logic, including displaying the running time
 def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y, last_start_time, last_stop_time):
     max_time = 59  # Unused variable, consider removing
@@ -144,7 +142,6 @@ def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
-
 # Configuring the GPIO pins as input with pull-up resistors
 GPIO.setup(start_switch1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(start_switch2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -176,13 +173,12 @@ windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
 
 # Displaying initial labels and timers
 fontObj = pygame.font.Font('freesansbold.ttf', int(height/5))
-display("Easy:", 1, 0)
-display("Hard:", 2, 0)
-display("Med :", 3, 0)
+display("Lane 1:", 1, 0)  # Changed from "Easy:"
+display("Lane 2:", 2, 0)  # Changed from "Hard:"
+display("Lane 3:", 3, 0)  # Changed from "Med :"
 display("00:00.0", 1, 1)
 display("00:00.0", 2, 1)
 display("00:00.0", 3, 1)
-
 pygame.display.update()
 
 # Initializing variables for timers
