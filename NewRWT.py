@@ -51,7 +51,7 @@ def write_high_scores(scores):
 def update_high_scores(score):
     global high_scores
     high_scores.append(score)
-    high_scores.sort(reverse=True)
+    high_scores.sort()
     high_scores = high_scores[:10]
     write_high_scores(high_scores)
 
