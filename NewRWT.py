@@ -221,7 +221,7 @@ scroll_position = CONFIG["width"]  # Set the initial scroll position to the widt
 fontObj = pygame.font.Font(CONFIG["title_font"], CONFIG["title_font_size"])  # Create a font object for the title
 msgSurfaceObj = fontObj.render("Climbing Wall Timers", False, CONFIG["colors"]["white"])  # Render the title in white
 msgRectobj = msgSurfaceObj.get_rect()  # Get the rectangular area of the rendered title
-msgRectobj.topleft = (CONFIG["timer_offset"] + 2, 0)  # Set the top-left position of the title
+msgRectobj.topleft = (2, 0)  # Set the top-left position of the title
 windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)  # Draw the title on the window surface
 
 # Displaying initial labels and timers
