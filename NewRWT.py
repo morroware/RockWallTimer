@@ -27,7 +27,10 @@ CONFIG = {
         "black": pygame.Color(*map(int, config.get('Colors', 'black').split(','))),
         "yellow": pygame.Color(*map(int, config.get('Colors', 'yellow').split(','))),
         "green": pygame.Color(*map(int, config.get('Colors', 'green').split(','))),
-    }
+    },
+    "title_font": config.get('Fonts', 'title_font'),
+    "timer_font": config.get('Fonts', 'timer_font'),
+    "high_score_font": config.get('Fonts', 'high_score_font'),
 }
 
 class Lane:
@@ -130,7 +133,7 @@ def format_high_score(score_seconds):
 
 def scroll_high_scores():
     global scroll_position
-    fontObj = pygame.font.Font('freesansbold.ttf', CONFIG["high_score_font_size"]) # High score scroller font size
+    fontObj = pygame.font.Font(CONFIG["high_score_font"], CONFIG["high_score_font_size"]) # High score scroller font size
     y_position = int(CONFIG["height"]/8)
     text = "High Scores: " + " | ".join([f"{idx+1}. {format_high_score(score)}" for idx, score in enumerate(high_scores)])
     msgSurfaceObj = fontObj.render(text, False, CONFIG["colors"]["red"])
@@ -143,7 +146,7 @@ def scroll_high_scores():
 
 # Display Function
 def display(msg, y, col):
-    fontObj = pygame.font.Font('freesansbold.ttf', CONFIG["timer_font_size"]) # Timer font size
+    fontObj = pygame.font.Font(CONFIG["timer_font"], CONFIG["timer_font_size"]) # Timer font size
     pygame.draw.rect(windowSurfaceObj, CONFIG["colors"]["grey"],
                      pygame.Rect(CONFIG["timer_offset"], y * CONFIG["lane_height"], CONFIG["width"], CONFIG["lane_height"]))
 
@@ -180,7 +183,7 @@ high_scores = read_high_scores()
 scroll_position = CONFIG["width"]
 
 # Displaying the title
-fontObj = pygame.font.Font('freesansbold.ttf', CONFIG["title_font_size"]) # Title font size
+fontObj = pygame.font.Font(CONFIG["title_font"], CONFIG["title_font_size"]) # Title font size
 msgSurfaceObj = fontObj.render("Climbing Wall Timers", False, CONFIG["colors"]["white"])
 msgRectobj = msgSurfaceObj.get_rect()
 msgRectobj.topleft = (CONFIG["timer_offset"] + 2, 0)
@@ -235,4 +238,3 @@ except Exception as e:
 finally:
     pygame.quit()
     GPIO.cleanup()
-
