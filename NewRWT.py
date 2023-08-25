@@ -31,6 +31,7 @@ CONFIG = {
     "title_font": config.get('Fonts', 'title_font'),
     "timer_font": config.get('Fonts', 'timer_font'),
     "high_score_font": config.get('Fonts', 'high_score_font'),
+    "stop_sound": config.get('Sounds', 'stop_sound'),
 }
 
 class Lane:
@@ -95,7 +96,7 @@ def init_pygame():
     pygame.init()
     pygame.mixer.init()
     windowSurfaceObj = pygame.display.set_mode((CONFIG["width"], CONFIG["height"]), pygame.FULLSCREEN)
-    stop_sound = pygame.mixer.Sound('stop_sound.wav')
+    stop_sound = pygame.mixer.Sound(CONFIG["stop_sound"])
 
 # High Scores Functions
 def read_high_scores():
