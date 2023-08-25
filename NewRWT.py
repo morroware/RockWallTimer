@@ -69,42 +69,43 @@ class Lane:
         self.y = y                      # Assign the y position
 
     def handle_stopwatch(self):
-    global stop_sound  # Accessing the global variable for the stop sound
+        global stop_sound  # Accessing the global variable for the stop sound
 
-    # Handle stopwatch running state and display time
-    if self.run == 1:  # If the timer is running
-        elapsed_time = time.time() - self.timer  # Calculate the elapsed time
-        self.m, self.s = divmod(elapsed_time, 60)  # Divide the elapsed time into minutes and seconds
-        self.s, ms = divmod(self.s, 1)  # Divide the seconds into whole seconds and milliseconds
-        current_time_str = f"{int(self.m):02}:{int(self.s):02}.{int(ms*10)}"  # Format the time string
-        if current_time_str != self.last_displayed_time:  # If the time has changed since the last display
-            display(current_time_str, self.y, 2)  # Display the current time
-            self.last_displayed_time = current_time_str  # Update the last displayed time
-    elif time.time() - self.timer > 1 and self.run == 0 and self.s == 0:
-        display("00:00.0", self.y, 2)  # If the timer is not running and has been stopped for more than 1 second, display "00:00.0"
+        # Handle stopwatch running state and display time
+        if self.run == 1:  # If the timer is running
+            elapsed_time = time.time() - self.timer  # Calculate the elapsed time
+            self.m, self.s = divmod(elapsed_time, 60)  # Divide the elapsed time into minutes and seconds
+            self.s, ms = divmod(self.s, 1)  # Divide the seconds into whole seconds and milliseconds
+            current_time_str = f"{int(self.m):02}:{int(self.s):02}.{int(ms*10)}"  # Format the time string
+            if current_time_str != self.last_displayed_time:  # If the time has changed since the last display
+                display(current_time_str, self.y, 2)  # Display the current time
+                self.last_displayed_time = current_time_str  # Update the last displayed time
+        elif time.time() - self.timer > 1 and self.run == 0 and self.s == 0:
+            display("00:00.0", self.y, 2)  # If the timer is not running and has been stopped for more than 1 second, display "00:00.0"
 
-    # Handle start button press
-    if GPIO.input(self.start_switch) == 0 and pygame.time.get_ticks() - self.last_start_time > CONFIG["debounce_time"]:
-        self.last_start_time = pygame.time.get_ticks()  # Record the time of the last start button press
-        if self.run == 0:  # If the timer is not running
-            self.run = 1  # Start the timer
-            self.timer = time.time()  # Record the start time
-        else:  # If the timer is already running
+        # Handle start button press
+        if GPIO.input(self.start_switch) == 0 and pygame.time.get_ticks() - self.last_start_time > CONFIG["debounce_time"]:
+            self.last_start_time = pygame.time.get_ticks()  # Record the time of the last start button press
+            if self.run == 0:  # If the timer is not running
+                self.run = 1  # Start the timer
+                self.timer = time.time()  # Record the start time
+            else:  # If the timer is already running
+                self.run = 0  # Stop the timer
+                self.s = 0  # Reset the seconds
+                self.m = 0  # Reset the minutes
+                self.timer = time.time()  # Reset the timer
+
+        # Handle stop button press
+        if GPIO.input(self.stop_switch) == 0 and self.run == 1 and pygame.time.get_ticks() - self.last_stop_time > CONFIG["debounce_time"]:
+            self.last_stop_time = pygame.time.get_ticks()  # Record the time of the last stop button press
+            total_time = self.s + self.m * 60  # Calculate the total time in seconds
             self.run = 0  # Stop the timer
             self.s = 0  # Reset the seconds
             self.m = 0  # Reset the minutes
             self.timer = time.time()  # Reset the timer
+            stop_sound.play()  # Play the stop sound
+            update_high_scores(total_time)  # Update the high scores with the total time
 
-    # Handle stop button press
-    if GPIO.input(self.stop_switch) == 0 and self.run == 1 and pygame.time.get_ticks() - self.last_stop_time > CONFIG["debounce_time"]:
-        self.last_stop_time = pygame.time.get_ticks()  # Record the time of the last stop button press
-        total_time = self.s + self.m * 60  # Calculate the total time in seconds
-        self.run = 0  # Stop the timer
-        self.s = 0  # Reset the seconds
-        self.m = 0  # Reset the minutes
-        self.timer = time.time()  # Reset the timer
-        stop_sound.play()  # Play the stop sound
-        update_high_scores(total_time)  # Update the high scores with the total time
 
 def init_gpio():
     GPIO.setmode(GPIO.BOARD)  # Set the GPIO mode to BOARD numbering scheme
@@ -174,9 +175,12 @@ def scroll_high_scores():                          # Define a function to scroll
 
 # Display Function
 def display(msg, y, col):
-    fontObj = pygame.font.Font(CONFIG["timer_font"], CONFIG["timer_font_size"])  # Create a font object with the specified font and size
-    pygame.draw.rect(windowSurfaceObj, CONFIG["colors"]["grey"],                 # Draw a grey rectangle as the background
-                     pygame.Rect(CONFIG["timer_offset"], y * CONFIG["lane_height"], CONFIG["width"], CONFIG["lane_height"]))
+    height = CONFIG["height"]  # Get height from the configuration
+    width = CONFIG["width"]    # Get width from the configuration
+    greyColor = CONFIG["colors"]["grey"] # Get grey color from the configuration
+    lane_height = int(height / 5)  # Calculate the height of each lane as one-fifth of the total height
+    fontObj = pygame.font.Font(CONFIG["timer_font"], lane_height) # Create the font object
+    pygame.draw.rect(windowSurfaceObj, greyColor, pygame.Rect(int(height/1.6), (y - 1) * lane_height, width, lane_height)) # Draw the rectangle
 
     if len(msg) > 5:  # If the message length is greater than 5
         if col == 0:  # If the color code is 0
@@ -190,12 +194,15 @@ def display(msg, y, col):
 
     msgRectobj = msgSurfaceObj.get_rect()  # Get the rectangular area of the rendered message
     if len(msg) > 5:  # If the message length is greater than 5
-        msgRectobj.topleft = (CONFIG["timer_offset"] + int(CONFIG["height"]/1.5), y * CONFIG["lane_height"])  # Set the top-left position
+        msgRectobj.topleft = (int(height/1.6) + 2, (y - 1) * lane_height)  # Set the top-left position
     else:  # If the message length is 5 or less
-        msgRectobj.topleft = (CONFIG["timer_offset"] + 2, y * CONFIG["lane_height"])  # Set the top-left position
+        msgRectobj.topleft = (int(height/1.6) + 2, (y - 1) * lane_height)  # Set the top-left position
 
     windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)  # Draw the message on the window surface
     pygame.display.update()  # Update the display to show the new content
+
+# Rest of the code remains the same...
+
 
 # Main initialization
 init_gpio()  # Call the function to initialize the GPIO pins
