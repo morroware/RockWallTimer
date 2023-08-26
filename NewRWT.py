@@ -1,23 +1,3 @@
-# Climbing Wall Timer Script
-#
-# This script is designed to control and manage a climbing wall timer system using a Raspberry Pi. The functionality includes:
-# 1. Handling multiple lanes with individual start, stop, and reset buttons.
-# 2. Displaying the current time for each lane and managing the stopwatch behavior.
-# 3. Storing and scrolling the high scores.
-# 4. Allowing customization of various parameters like screen size, colors, fonts, and sounds through a configuration file (config.ini).
-# 5. Providing a clean and user-friendly interface for climbing wall participants and observers.
-# 6. Logging errors and exceptions to a file for troubleshooting.
-#
-# Dependencies:
-# - pygame for rendering the graphical interface
-# - RPi.GPIO for interacting with the Raspberry Pi's GPIO pins
-# - time, datetime for time handling
-# - configparser for reading the configuration file
-# - traceback for handling exceptions
-#
-# The script is intended to be run on a Raspberry Pi with the appropriate hardware setup, including buttons for controlling the timers,
-# and a 1080p display for output.
-
 import pygame, sys  # Import the pygame library for game development and sys for system functions
 import time         # Import the time library to handle time-related tasks
 import RPi.GPIO as GPIO  # Import the Raspberry Pi GPIO library to control the GPIO pins
