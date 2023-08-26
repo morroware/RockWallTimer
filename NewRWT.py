@@ -201,9 +201,6 @@ def display(msg, y, col):
     windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)  # Draw the message on the window surface
     pygame.display.update()  # Update the display to show the new content
 
-# Rest of the code remains the same...
-
-
 # Main initialization
 init_gpio()  # Call the function to initialize the GPIO pins
 init_pygame()  # Call the function to initialize Pygame
