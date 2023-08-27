@@ -61,15 +61,15 @@ def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed
         display("00:00.0", y, 2)
 
     if GPIO.input(start_switch) == 0 and time.time() - timer > 1:
-        if state == 1:  # If the timer is currently running
-            run = 0  # Stop the timer
-            state = 0  # Change state to reset
-        elif state == 2:  # If the previous run has ended
-            state = 1  # Change the state to running
-            run = 1  # Start the stopwatch
+        if state == 1:
+            run = 0
+            state = 0
+        elif state == 2:
+            state = 1
+            run = 1
         else:
-            state = 1  # Change state to running
-            run = 1  # Start the stopwatch
+            state = 1
+            run = 1
 
         s = 0
         m = 0
@@ -77,10 +77,10 @@ def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed
         display("00:00.0", y, 1)
 
     if GPIO.input(stop_switch) == 0 and run == 1:
-        run = 0  # Stop the stopwatch
-        state = 2  # Change the state to stopped
-        stop_sound.play()  # Play a stop sound
-        update_high_scores(s + m * 60)  # Update high scores based on total time
+        run = 0
+        state = 2
+        stop_sound.play()
+        update_high_scores(s + m * 60)
 
     return run, s, m, timer, last_displayed_time, state
 
@@ -138,9 +138,9 @@ msgRectobj.topleft = (2, 0)
 windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
 
 # Displaying initial labels and timers
-display("Easy:", 1, 0)
-display("Hard:", 2, 0)
-display("Med :", 3, 0)
+display("Lane 1:", 1, 0)  # Changed from "Easy:"
+display("Lane 2:", 2, 0)  # Changed from "Hard:"
+display("Lane 3:", 3, 0)  # Changed from "Med :"
 display("00:00.0", 1, 1)
 display("00:00.0", 2, 1)
 display("00:00.0", 3, 1)
@@ -157,9 +157,9 @@ s3 = 0
 m1 = 0
 m2 = 0
 m3 = 0
-state1 = 0  # New variable for state
-state2 = 0  # New variable for state
-state3 = 0  # New variable for state
+state1 = 0
+state2 = 0
+state3 = 0
 timer1 = time.time()
 timer2 = time.time()
 timer3 = time.time()
@@ -217,3 +217,4 @@ finally:
     # Ensure that resources are released even if an exception occurs
     pygame.quit()
     GPIO.cleanup()
+
