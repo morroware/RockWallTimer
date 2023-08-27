@@ -10,19 +10,29 @@ import datetime
 # Function to read high scores from a file
 def read_high_scores():
     try:
-        # Open the file and read high scores, convert each line to a float
         with open('high_scores.txt', 'r') as file:
-            return [float(line.strip()) for line in file.readlines()]
+            # Convert "MM:SS.S" to seconds
+            return [convert_to_seconds(line.strip()) for line in file.readlines()]
     except FileNotFoundError:
-        # If file not found, create a list of 10 zeros as placeholder high scores
         return [0] * 10
 
 # Function to write high scores to a file
 def write_high_scores(scores):
-    # Open file and write each score to a new line
     with open('high_scores.txt', 'w') as file:
         for score in scores:
-            file.write(str(score) + '\n')
+            # Convert seconds to "MM:SS.S" format
+            file.write(convert_to_str(score) + '\n')
+
+# Convert time in seconds to "MM:SS.S" format
+def convert_to_str(seconds):
+    minutes, remainder = divmod(int(seconds), 60)
+    return f"{minutes:02d}:{remainder:04.1f}"
+
+# Convert time in "MM:SS.S" format to seconds
+def convert_to_seconds(time_str):
+    minutes, seconds = map(float, time_str.split(":"))
+    return minutes * 60 + seconds
+
 
 # Function to update high scores
 def update_high_scores(score):
