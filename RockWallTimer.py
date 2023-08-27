@@ -7,9 +7,6 @@ import RPi.GPIO as GPIO
 import traceback
 import datetime
 
-# Global variable to track the horizontal position of the high scores
-scroll_position = 0
-
 # Function to read high scores from a file
 def read_high_scores():
     try:
@@ -32,26 +29,10 @@ def update_high_scores(score):
     high_scores = high_scores[:10]
     write_high_scores(high_scores)
 
-# Function to render and scroll the high scores
-def scroll_high_scores():
-    global high_scores
-    global scroll_position
-    fontObj = pygame.font.Font('freesansbold.ttf', int(height/20))
-    y_position = int(height/8)
-    text = "High Scores: " + " | ".join([f"{idx+1}. {score}" for idx, score in enumerate(high_scores)])
-    msgSurfaceObj = fontObj.render(text, False, redColor)
-    msgRectobj = msgSurfaceObj.get_rect()
-    msgRectobj.topleft = (scroll_position, y_position)
-    windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
-    scroll_position -= 5  # Speed of scrolling
-    if scroll_position < -msgRectobj.width:
-        scroll_position = width  # Reset to the right side of the screen
-
 # Function to display messages on the screen
 def display(msg, y, col):
     fontObj = pygame.font.Font('freesansbold.ttf', int(height/5))
     pygame.draw.rect(windowSurfaceObj, greyColor, pygame.Rect(int(height/1.6), y * int(height/4), width, int(height/5)))
-
     if len(msg) > 5:
         if col == 0:
             msgSurfaceObj = fontObj.render(msg, False, redColor)
@@ -72,39 +53,36 @@ def display(msg, y, col):
     pygame.display.update()
 
 # Function to handle stopwatch logic
-def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y):
+def handle_stopwatch(start_switch, stop_switch, run, s, m, timer, last_displayed_time, y, state):
     max_time = 59
-    
-    # Check if the time has passed 1 second and the stopwatch is not running (run == 0) and seconds (s) is 0
-    if time.time() - timer > 1 and run == 0 and s == 0:
-        display("00:00.0", y, 2)  # Display "00:00.0" at position y with display mode 2
+    # State: 0 = reset, 1 = running, 2 = stopped
 
-    # Check if the start button is pressed (start_switch == 0) and time has passed 1 second,
-    # or if the stopwatch is already running (run == 1)
+    if state == 0 and run == 0:
+        display("00:00.0", y, 2)
+
     if GPIO.input(start_switch) == 0 and time.time() - timer > 1:
-        if run == 0:
-            run = 1
-            start_time = time.time()
-            timer = time.time()
+        if state == 1:  # If the timer is currently running
+            run = 0  # Stop the timer
+            state = 0  # Change state to reset
+        elif state == 2:  # If the previous run has ended
+            state = 1  # Change the state to running
+            run = 1  # Start the stopwatch
         else:
-            run = 0  # Reset the stopwatch and start anew
-            display("00:00.0", y, 1)  # Display "00:00.0" at position y with display mode 1
-            s = 0
-            m = 0
-            timer = time.time()
+            state = 1  # Change state to running
+            run = 1  # Start the stopwatch
 
-    # Check if the stop button is pressed (stop_switch == 0)
-    if GPIO.input(stop_switch) == 0 and run == 1:
-        run = 0
-        display("00:00.0", y, 1)  # Display "00:00.0" at position y with display mode 1
         s = 0
         m = 0
         timer = time.time()
-        stop_sound.play()  # Play a stop sound (assuming this is a sound object)
+        display("00:00.0", y, 1)
+
+    if GPIO.input(stop_switch) == 0 and run == 1:
+        run = 0  # Stop the stopwatch
+        state = 2  # Change the state to stopped
+        stop_sound.play()  # Play a stop sound
         update_high_scores(s + m * 60)  # Update high scores based on total time
-        
-    return run, s, m, timer, last_displayed_time
-    return run, s, m, timer, last_displayed_time
+
+    return run, s, m, timer, last_displayed_time, state
 
 # Setting the screen width and height
 width = 1920
@@ -160,7 +138,6 @@ msgRectobj.topleft = (2, 0)
 windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
 
 # Displaying initial labels and timers
-fontObj = pygame.font.Font('freesansbold.ttf', int(height/5))
 display("Easy:", 1, 0)
 display("Hard:", 2, 0)
 display("Med :", 3, 0)
@@ -180,6 +157,9 @@ s3 = 0
 m1 = 0
 m2 = 0
 m3 = 0
+state1 = 0  # New variable for state
+state2 = 0  # New variable for state
+state3 = 0  # New variable for state
 timer1 = time.time()
 timer2 = time.time()
 timer3 = time.time()
@@ -196,16 +176,10 @@ try:
                 GPIO.cleanup()  # Cleanup GPIO resources
                 sys.exit()
 
-        # Clearing the screen
-        pygame.draw.rect(windowSurfaceObj, blackColor, pygame.Rect(0, int(height/8), int(width/3), int(height/7) * 10))
-
-        # Render and scroll the high scores
-        scroll_high_scores()
-
         # Handling the three stopwatches
-        run1, s1, m1, timer1, last_displayed_time1 = handle_stopwatch(start_switch1, stop_switch1, run1, s1, m1, timer1, last_displayed_time1, 1)
-        run2, s2, m2, timer2, last_displayed_time2 = handle_stopwatch(start_switch2, stop_switch2, run2, s2, m2, timer2, last_displayed_time2, 2)
-        run3, s3, m3, timer3, last_displayed_time3 = handle_stopwatch(start_switch3, stop_switch3, run3, s3, m3, timer3, last_displayed_time3, 3)
+        run1, s1, m1, timer1, last_displayed_time1, state1 = handle_stopwatch(start_switch1, stop_switch1, run1, s1, m1, timer1, last_displayed_time1, 1, state1)
+        run2, s2, m2, timer2, last_displayed_time2, state2 = handle_stopwatch(start_switch2, stop_switch2, run2, s2, m2, timer2, last_displayed_time2, 2, state2)
+        run3, s3, m3, timer3, last_displayed_time3, state3 = handle_stopwatch(start_switch3, stop_switch3, run3, s3, m3, timer3, last_displayed_time3, 3, state3)
 
         # Handling reset switch
         if GPIO.input(reset_switch) == 0:
@@ -218,6 +192,9 @@ try:
             m1 = 0
             m2 = 0
             m3 = 0
+            state1 = 0
+            state2 = 0
+            state3 = 0
             timer1 = time.time()
             timer2 = time.time()
             timer3 = time.time()
@@ -240,4 +217,3 @@ finally:
     # Ensure that resources are released even if an exception occurs
     pygame.quit()
     GPIO.cleanup()
-
